@@ -1,0 +1,102 @@
+-- Teamwork Puzzles 2
+local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
+ScreenGui.Name = "AutoTeleportGui"
+
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 200, 0, 100)
+Frame.Position = UDim2.new(0, 20, 0, 20)
+Frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+Frame.Name = "MainFrame"
+
+local title = Instance.new("TextLabel", Frame)
+title.Size = UDim2.new(1, -30, 0, 25)
+title.Position = UDim2.new(0, 5, 0, 0)
+title.Text = "CNV"
+title.Font = Enum.Font.Gotham
+title.TextSize = 16
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextXAlignment = Enum.TextXAlignment.Left
+
+local arrowBtn = Instance.new("TextButton", Frame)
+arrowBtn.Size = UDim2.new(0, 20, 0, 20)
+arrowBtn.Position = UDim2.new(1, -25, 0, 2)
+arrowBtn.Text = "^"
+arrowBtn.Font = Enum.Font.GothamBold
+arrowBtn.TextSize = 14
+arrowBtn.BackgroundTransparency = 1
+arrowBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+arrowBtn.Name = "ArrowButton"
+
+local toggleBtn = Instance.new("TextButton", Frame)
+toggleBtn.Size = UDim2.new(1, -20, 0, 40)
+toggleBtn.Position = UDim2.new(0, 10, 0, 40)
+toggleBtn.Text = "Off"
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 14
+toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.BorderSizePixel = 0
+toggleBtn.Name = "ToggleButton"
+
+-- Logic
+local autoTeleporting = false
+local guiOpen = true
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+local pos2 = Vector3.new(252, -67, -20776)
+local x1, z1 = 727, 32
+
+local function clearForces()
+	for _, obj in pairs(humanoidRootPart:GetChildren()) do
+		if obj:IsA("BodyMover") or obj:IsA("BodyVelocity") or obj:IsA("BodyGyro") then
+			obj:Destroy()
+		end
+	end
+end
+
+local function teleportLoop()
+	while autoTeleporting do
+		wait(1)
+		if not autoTeleporting then break end
+
+		local currentY = humanoidRootPart.Position.Y + 2
+		local pos1 = Vector3.new(x1, currentY, z1)
+		humanoidRootPart.CFrame = CFrame.new(pos1)
+		clearForces()
+
+		wait(4.4)
+		if not autoTeleporting then break end
+
+		humanoidRootPart.CFrame = CFrame.new(pos2)
+		clearForces()
+	end
+end
+
+toggleBtn.MouseButton1Click:Connect(function()
+	autoTeleporting = not autoTeleporting
+	toggleBtn.Text = autoTeleporting and "On" or "Off"
+	toggleBtn.BackgroundColor3 = autoTeleporting and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 0, 0)
+
+	if autoTeleporting then
+		coroutine.wrap(teleportLoop)()
+	end
+end)
+
+arrowBtn.MouseButton1Click:Connect(function()
+	guiOpen = not guiOpen
+	if guiOpen then
+		Frame.Size = UDim2.new(0, 200, 0, 100)
+		toggleBtn.Visible = true
+		arrowBtn.Text = "^"
+	else
+		Frame.Size = UDim2.new(0, 200, 0, 25)
+		toggleBtn.Visible = false
+		arrowBtn.Text = "v"
+	end
+end)
